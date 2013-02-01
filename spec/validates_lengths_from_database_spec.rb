@@ -37,6 +37,10 @@ describe ValidatesLengthsFromDatabase do
     before do
       class ArticleValidateAll < ActiveRecord::Base
         set_table_name "articles"
+
+        alias_attribute :string_1_alias, :string_1
+        alias_attribute :text_1_alias, :text_1
+
         validates_lengths_from_database
       end
     end
@@ -53,6 +57,13 @@ describe ValidatesLengthsFromDatabase do
         @article.errors["string_2"].join.should =~ /too long/
         @article.errors["text_1"].join.should =~ /too long/
       end
+
+      context "with alias_attributes" do
+        it "should have errors on all alias attributes" do
+          @article.errors["string_1_alias"].join.should =~ /too long/
+          @article.errors["text_1_alias"].join.should =~ /too long/
+        end
+      end
     end
 
     context "an article with short attributes" do
@@ -63,7 +74,7 @@ describe ValidatesLengthsFromDatabase do
       end
     end
   end
-  
+
   context "Model with validates_lengths_from_database :limit => 10" do
     before do
       class ArticleValidateLimit < ActiveRecord::Base
@@ -94,7 +105,7 @@ describe ValidatesLengthsFromDatabase do
       end
     end
   end
-  
+
   context "Model with validates_lengths_from_database :limit => {:string => 5, :text => 100}" do
     before do
       class ArticleValidateSpecificLimit < ActiveRecord::Base
@@ -117,7 +128,7 @@ describe ValidatesLengthsFromDatabase do
       end
     end
   end
-  
+
   context "Model with validates_lengths_from_database :only => [:string_1, :text_1]" do
     before do
       class ArticleValidateOnly < ActiveRecord::Base
@@ -179,5 +190,5 @@ describe ValidatesLengthsFromDatabase do
       end
     end
   end
-  
+
 end

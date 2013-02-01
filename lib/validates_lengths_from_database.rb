@@ -23,24 +23,35 @@ module ValidatesLengthsFromDatabase
       if options[:only]
         columns_to_validate = options[:only].map(&:to_s)
       else
-        columns_to_validate = column_names.map(&:to_s)
+        columns_to_validate = column_names.map(&:to_s) + alias_attribute_method_map.keys.map(&:to_s)
         columns_to_validate -= options[:except].map(&:to_s) if options[:except]
       end
 
       columns_to_validate.each do |column|
+        attribute_name = column
+        column = alias_attribute_method_map[column] if alias_attribute_method_map.has_key?(column)
         column_schema = columns.find {|c| c.name == column }
         next if column_schema.nil?
         next if ![:string, :text].include?(column_schema.type)
-        
+
         column_limit = options[:limit][column_schema.type] || column_schema.limit
         next unless column_limit
 
         class_eval do
-          validates_length_of column, :maximum => column_limit, :allow_blank => true
+          validates_length_of attribute_name, :maximum => column_limit, :allow_blank => true
         end
       end
 
       nil
+    end
+
+    def alias_attribute(new_name, old_name)
+      super
+      alias_attribute_method_map[new_name.to_s] = old_name.to_s
+    end
+
+    def alias_attribute_method_map
+      @alias_attribute_method_map ||= HashWithIndifferentAccess.new
     end
 
   end
