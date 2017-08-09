@@ -32,7 +32,7 @@ module ValidatesLengthsFromDatabase
         column = alias_attribute_method_map[column] if alias_attribute_method_map.has_key?(column)
         column_schema = columns.find {|c| c.name == column }
         next if column_schema.nil?
-        next if ![:string, :text].include?(column_schema.type)
+        next if ![:string, :text, :varchar].include?(column_schema.type)
 
         column_limit = options[:limit][column_schema.type] || column_schema.limit
         next unless column_limit
